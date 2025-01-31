@@ -104,18 +104,19 @@ const tourSchema = new mongoose.Schema({
   ],
 });
 
-// slufify middleware
+// slufify middleware: adds a slugify text for the tour
 tourSchema.pre("save", function (next) {
   this.slug = slugify(this.name, { lower: true });
 });
 
+// query to filter the secrete tours only f. This always pre qyuery
 tourSchema.pre(/^find/, function (this: Query<any, any>, next) {
   this.find({ secret_tour: { $ne: true } });
   this.set("start", Date.now());
   next();
 });
 
-//post request middleware
+//post request middleware: Checks for the query time for optimizatioin(will be done in the future)
 tourSchema.post(/^find/, function (docs, next) {
   console.log(`Query took ${Date.now() - this.get("start")} milliseconds`);
   next();
