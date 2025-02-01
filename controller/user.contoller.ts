@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 
 const User = require("../models/users.model");
 const { createJWTToken } = require("../middleware/authMiddleware");
+const crypto = require("crypto");
 
 const signUp = async (req: Request, res: Response) => {
   const newUser = await User.create({
@@ -40,6 +41,13 @@ const logIn = async (req: Request, res: Response) => {
     token,
     message: "Success",
   });
+};
+
+const forgotPassword = async (req: Request, res: Response) => {
+  const email = req?.body.email;
+  const checkUser = User.findOne({ email }).select("email");
+  if (!checkUser) throw new Error("No user associated with the email");
+  
 };
 
 module.exports = { signUp, logIn };
