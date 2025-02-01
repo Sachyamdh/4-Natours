@@ -1,6 +1,7 @@
 import mongoose, { Query } from "mongoose";
+const bcrypt = require("bcryptjs");
 
-const UserSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, "A user must have a name"],
@@ -17,6 +18,7 @@ const UserSchema = new mongoose.Schema({
     minlength: [8, "Password msut be 8 characters long"],
     select: false,
     trim: true,
+    required: [true, "Password is required"],
   },
   confirm_password: {
     type: String,
@@ -57,9 +59,26 @@ const UserSchema = new mongoose.Schema({
   },
 });
 
+//hasing the password before saving it
+userSchema.pre("save", async function (next) {
+  const [hashedPassword, confirmhashedPassword] = await Promise.all([
+    bcrypt.hash(this.password, 10),
+    bcrypt.hash(this.confirm_password, 10),
+  ]);
+  this.password = hashedPassword;
+  this.confirm_password = confirmhashedPassword;
+  next();
+});
 
+//method to check the correct password
+userSchema.methods.correctPassword = async function (
+  candidatePassword: string,
+  userPassword: string
+) {
+  console.log(await bcrypt.compare(candidatePassword, userPassword));
+  return (await bcrypt.compare(candidatePassword, userPassword)) as boolean;
+};
 
-
-const User = mongoose.model("User", UserSchema);
+const User = mongoose.model("User", userSchema);
 
 module.exports = User;

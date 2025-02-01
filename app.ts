@@ -11,6 +11,7 @@ declare global {
 const express = require("express");
 const path = require("path");
 const morgan = require("morgan");
+const authRoutes = require("./routes/user.routes");
 
 const app = express();
 
@@ -25,8 +26,16 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+app.use("/api/v1/auth", authRoutes);
+
 app.get("/", (req: Request, res: Response) => {
   res.status(200).send("Hello from the server side!");
 });
 
+//sending a bad response when there is no associated routes
+app.all("*", async (req: Request, res: Response) => {
+  res
+    .status(404)
+    .json({ message: `No asscosiated routes Can't find the ${req.url}` });
+});
 module.exports = app;
