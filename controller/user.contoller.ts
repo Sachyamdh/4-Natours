@@ -22,13 +22,18 @@ const signUp = async (req: Request, res: Response) => {
 
 const logIn = async (req: Request, res: Response) => {
   const { email, password } = req.body;
+
+  //throwing error if the email and password field is empty
   if (!email || !password) throw new Error("Email or password not entered");
+
+  //getting the user from the cluster
   const getUser = await User.findOne({ email }).select("_id name password");
   if (!getUser)
     throw new Error("User associated with the email does not exist");
-  console.log(getUser);
+
+  //comparing the user password
   if (!(await getUser.correctPassword(password, getUser.password)))
-    throw new Error("User Credentials do not mathc");
+    throw new Error("User Credentials do not match");
 
   const token = createJWTToken(getUser._id, getUser.name);
   res.status(200).json({
